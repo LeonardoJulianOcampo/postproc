@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1326</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>1187</width>
+    <height>600</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>posproc</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QTabWidget" name="tabWidget">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>0</y>
+      <width>1302</width>
+      <height>554</height>
+     </rect>
+    </property>
+    <property name="currentIndex">
+     <number>0</number>
+    </property>
+    <widget class="QWidget" name="tabTimeDomain">
+     <attribute name="title">
+      <string>Análisis en dominio del tiempo</string>
+     </attribute>
+     <layout class="QHBoxLayout" name="horizontalLayout_4">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="PlotWidget" name="timePlotWidget" native="true">
+          <property name="minimumSize">
+           <size>
+            <width>851</width>
+            <height>501</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>851</width>
+            <height>501</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupBox">
+          <property name="minimumSize">
+           <size>
+            <width>421</width>
+            <height>501</height>
+           </size>
+          </property>
+          <property name="title">
+           <string>Operaciones</string>
+          </property>
+          <widget class="QGroupBox" name="groupBox_2">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>30</y>
+             <width>281</width>
+             <height>251</height>
+            </rect>
+           </property>
+           <property name="title">
+            <string>Datos</string>
+           </property>
+           <widget class="QPushButton" name="pushButton">
+            <property name="geometry">
+             <rect>
+              <x>190</x>
+              <y>50</y>
+              <width>81</width>
+              <height>25</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Cargar</string>
+            </property>
+           </widget>
+           <widget class="QWidget" name="layoutWidget">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>110</y>
+              <width>261</width>
+              <height>131</height>
+             </rect>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout_6">
+             <item>
+              <widget class="QListView" name="listViewSeriesAvaliable"/>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout">
+               <item>
+                <widget class="QPushButton" name="pushButtonLoadToPlot">
+                 <property name="text">
+                  <string>&gt;</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="pushButtonRemoveToPlot">
+                 <property name="text">
+                  <string>&lt;</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="pushButtonPlotAll">
+                 <property name="text">
+                  <string>&gt;&gt;</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="pushButtonRemoveAll">
+                 <property name="text">
+                  <string>&lt;&lt;</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="QListView" name="listViewSeriesToPlot"/>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QLabel" name="label_2">
+            <property name="geometry">
+             <rect>
+              <x>11</x>
+              <y>31</y>
+              <width>139</width>
+              <height>17</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Selección de parámetros</string>
+            </property>
+           </widget>
+           <widget class="QComboBox" name="comboBoxIMUSelection">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>50</y>
+              <width>171</width>
+              <height>25</height>
+             </rect>
+            </property>
+            <item>
+             <property name="text">
+              <string>Pitch</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Yaw</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Roll</string>
+             </property>
+            </item>
+           </widget>
+           <widget class="QLabel" name="label">
+            <property name="geometry">
+             <rect>
+              <x>11</x>
+              <y>85</y>
+              <width>91</width>
+              <height>17</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Disponibles</string>
+            </property>
+           </widget>
+          </widget>
+          <widget class="QGroupBox" name="groupBoxAlignX">
+           <property name="geometry">
+            <rect>
+             <x>300</x>
+             <y>30</y>
+             <width>111</width>
+             <height>121</height>
+            </rect>
+           </property>
+           <property name="title">
+            <string>Alineación eje X</string>
+           </property>
+           <widget class="QWidget" name="layoutWidget">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>30</y>
+              <width>170</width>
+              <height>83</height>
+             </rect>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_2">
+             <item>
+              <widget class="QPushButton" name="pushButtonAutomaticAlign">
+               <property name="text">
+                <string>Al. Autom.</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="manualOffsetLabelX">
+               <property name="text">
+                <string>Offset Manual</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout">
+               <item>
+                <widget class="QPushButton" name="pushButtonDecX">
+                 <property name="text">
+                  <string>-</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="pushButtonIncX">
+                 <property name="text">
+                  <string>+</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+          <widget class="QGroupBox" name="groupBoxAlignY">
+           <property name="geometry">
+            <rect>
+             <x>300</x>
+             <y>160</y>
+             <width>111</width>
+             <height>121</height>
+            </rect>
+           </property>
+           <property name="title">
+            <string>Alineación eje Y</string>
+           </property>
+           <widget class="QWidget" name="layoutWidget">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>30</y>
+              <width>170</width>
+              <height>83</height>
+             </rect>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_3">
+             <item>
+              <widget class="QPushButton" name="pushButton_2">
+               <property name="text">
+                <string>Est. A cero</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="manualOffsetLabelY">
+               <property name="text">
+                <string>Offset Manual</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_2">
+               <item>
+                <widget class="QPushButton" name="pushButtonDecY">
+                 <property name="text">
+                  <string>-</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="pushButtonIncY">
+                 <property name="text">
+                  <string>+</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+          <widget class="QGroupBox" name="groupBox_3">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>400</y>
+             <width>401</width>
+             <height>91</height>
+            </rect>
+           </property>
+           <property name="title">
+            <string>Visualización y exportación</string>
+           </property>
+           <widget class="QPushButton" name="pushButtonRefreshPlot">
+            <property name="geometry">
+             <rect>
+              <x>150</x>
+              <y>60</y>
+              <width>101</width>
+              <height>25</height>
+             </rect>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Refrescar Plot</string>
+            </property>
+           </widget>
+           <widget class="QWidget" name="layoutWidget">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>30</y>
+              <width>381</width>
+              <height>27</height>
+             </rect>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout_5">
+             <item>
+              <widget class="QPushButton" name="pushButtonSaveAsSVG">
+               <property name="text">
+                <string>Guardar como SVG</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButtonSaveAsPNG">
+               <property name="text">
+                <string>Guardar como PNG</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QWidget" name="tabFreqDomain">
+     <attribute name="title">
+      <string>Análisis en el dominio de la frecuencia</string>
+     </attribute>
+    </widget>
+    <widget class="QWidget" name="tabCompatativePlots">
+     <attribute name="title">
+      <string>Análisis comparativo</string>
+     </attribute>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1326</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuArchivo">
+    <property name="title">
+     <string>Archivo</string>
+    </property>
+    <addaction name="actionConfigurar_directorios"/>
+    <addaction name="actionSalir"/>
+   </widget>
+   <widget class="QMenu" name="menuAcerca_de">
+    <property name="title">
+     <string>Ayuda</string>
+    </property>
+    <addaction name="actionAyuda"/>
+    <addaction name="actionAcerca_de"/>
+   </widget>
+   <addaction name="menuArchivo"/>
+   <addaction name="menuAcerca_de"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionAyuda">
+   <property name="text">
+    <string>Guia rápida</string>
+   </property>
+  </action>
+  <action name="actionAcerca_de">
+   <property name="text">
+    <string>Acerca de posproc</string>
+   </property>
+  </action>
+  <action name="actionConfigurar_directorios">
+   <property name="text">
+    <string>Cargar datos</string>
+   </property>
+  </action>
+  <action name="actionSalir">
+   <property name="text">
+    <string>Salir</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>PlotWidget</class>
+   <extends>QWidget</extends>
+   <header>pyqtgraph</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

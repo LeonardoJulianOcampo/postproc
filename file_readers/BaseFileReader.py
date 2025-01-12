@@ -1,0 +1,36 @@
+from abc import ABC, abstractmethod
+import os
+
+class FileReader:
+
+    def __init__(self, input_file, output_file):
+
+        self._input_file = input_file
+        self._output_file = output_file
+        self._output_dir = output_file.split('/')[:-1]
+        self._output_dir = '/'.join(self._output_dir)
+        self._column_names = []
+        self._data = []
+        self._dateline = None
+        self._first_timestamp_line = None
+
+    def check_files(self):
+        if not os.path.isfile(self._input_file):
+            raise FileNotFoundError("No se encuentra el archivo", self._input_file)
+        else:
+            print('archivo encontrado')
+
+        if not os.path.isdir(self._output_dir):
+            os.makedirs(self._output_dir)
+
+    @abstractmethod
+    def read_file(self):
+        pass
+
+    @abstractmethod
+    def format_file(self):
+        pass
+
+    @abstractmethod
+    def save_file(self, temporal=False):
+        pass
