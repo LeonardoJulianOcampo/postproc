@@ -34,7 +34,7 @@ class MainWindow(QMainWindow):
 
         self.input_paths_dict['out_dict'] = self.out_dict
         self.reader_modules = 'file_readers.readers'
-        self.reader_lst = []
+        self.reader_dict = {}
         self.data_sets = {}
 
     def exit_program(self):
@@ -45,15 +45,16 @@ class MainWindow(QMainWindow):
             if element not in ('OUTDIR', '', None):
                 if self.input_paths_dict['in_dict'][element] != '':
                     module = importlib.import_module(self.reader_modules)
-                    self.reader_lst.append(getattr(module, element + 'FileReader'))
-            if self.reader_lst:
-                for obj in self.reader_lst:
-                    reader = obj(self.input_paths_dict['in_dict'][element],
-                                 self.input_paths_dict['in_dict']['OUTDIR'])
-                    reader.check_files()
-                    reader.read_file()
-                    reader.save_file()
-                    self.data_sets[element] = reader.get_df()
+                    self.reader_dict[element] = getattr(module, element + 'FileReader')
+        if self.reader_dict:
+            for key in self.reader_dict.keys():
+                reader = self.reader_dict[key](self.input_paths_dict['in_dict'][key],
+                                               self.input_paths_dict['in_dict']['OUTDIR'])
+                reader.check_files()
+                reader.read_file()
+                reader.save_file()
+
+                self.data_sets[key] = reader.get_df()
 
     def open_file_window(self):
         dialog = OpenFilesDialog()
@@ -62,13 +63,9 @@ class MainWindow(QMainWindow):
 
     def plot(self, pandas_df):
         try:
-            # Verificar que el DataFrame tiene las columnas necesarias
-            if 'TINTRPL' not in pandas_df.columns or 'roll' not in pandas_df.columns:
-                print("Error: Columnas requeridas no encontradas en el DataFrame")
+            if 'time' not in pandas_df.columns or 'roll' not in pandas_df.columns:
                 return
-            # lista_flotantes = df['columna'].astype(float).tolist()
-            # Convertir a numpy arrays eliminando valores no válidos
-            x = pandas_df['TINTRPL'].astype(float).tolist()
+            x = pandas_df['time'].astype(float).tolist()
             y = pandas_df['roll'].astype(float).tolist()
 
             self.tabTimeDPlot.clear()
@@ -79,7 +76,6 @@ class MainWindow(QMainWindow):
 
     def receive_paths_from_file_window(self, path_dict):
         self.input_paths_dict['in_dict'] = path_dict
-        print(path_dict)
         process_files_diag = None
         self.init_processing()
 
