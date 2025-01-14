@@ -25,7 +25,10 @@ class FileReader:
 
     @abstractmethod
     def read_file(self):
-        pass
+        """
+        Lee el archivo de origen, y devuelve un dataframe de pandas.
+        el procesamiento necesario tambien se incluye en este metodo
+        """
 
     @abstractmethod
     def format_file(self):
@@ -33,4 +36,15 @@ class FileReader:
 
     @abstractmethod
     def save_file(self, temporal=False):
+        pass
+
+    @abstractmethod
+    def compute_start_time(self):
+        """
+        Método que genera el timestamp inicial en base a datos como
+        fecha y hora a un valor estandar dado por segundos transcurridos
+        desde las 00:00hs del día de efectuada la medición hasta el
+        instante de la medición en formato UTC
+        """
+
         pass
