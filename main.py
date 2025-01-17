@@ -2,11 +2,11 @@ import sys
 import os
 import importlib
 import numpy as np
-from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton
 from PyQt5.QtWidgets import QWidget, QListView
 from PyQt5.QtWidgets import QTabWidget
 from ui.main_window_ui import Ui_MainWindow
-from PyQt5.core import QStringListModel
+from PyQt5.QtCore import QStringListModel
 from open_files_diag import OpenFilesDialog
 from dataframe_operations.generate_db import DB
 
@@ -29,7 +29,22 @@ class MainWindow(QMainWindow):
         self.tabTimeDPlot.setTitle('Gráfico:')
 
         self.list_availables = self.findChild(QListView,
-                                              'listViewSeriesAvailable')
+                                              'listViewSeriesAvaliable')
+
+        self.list_to_plot = self.findChild(QListView,
+                                           'listViewSeriesToPlot')
+
+        self.load2plot_button = self.findChild(QPushButton,
+                                               'pushButtonLoadToPlot')
+
+        self.move2availableButton = self.findChild(QPushButton,
+                                                   'pushButtonRemoveToPlot')
+
+        self.load2plot_button.clicked.connect(self.move_to_selected)
+        self.move2availableButton.clicked.connect(self.move_to_available)
+
+        self.list2plot = self.findChild(QListView,
+                                        'listViewSeriesToPlot')
 
         self.input_paths_dict = {'in_dict': None,
                                  'out_dict': None}
@@ -42,6 +57,12 @@ class MainWindow(QMainWindow):
         self.reader_modules = 'file_readers.readers'
         self.reader_dict = {}
         self.data_sets = []
+
+        self.columns2plot = []
+        self.columns_available = []
+
+        self.available_model = QStringListModel()
+        self.selected_model = QStringListModel()
 
     def exit_program(self):
         sys.exit(app.exec_())
@@ -72,6 +93,50 @@ class MainWindow(QMainWindow):
 
             database = DB(self.data_sets, self.input_paths_dict['in_dict']['OUTDIR'])
             database.save_as_csv()
+            self.columns_available = database.get_db()
+            self.load_columns()
+
+    def load_columns(self):
+        self.available_model.setStringList(self.columns_available)
+        self.list_availables.setModel(self.available_model)
+
+    def move_to_selected(self):
+
+        sel_indexes = self.list_availables.selectionModel().selectedIndexes()
+        if not sel_indexes:
+            return
+
+        sel_items = [index.data() for index in sel_indexes]
+
+        current_selected = self.selected_model.stringList()
+        current_selected = self.selected_model.setStringList(current_selected + sel_items)
+
+        current_available = self.available_model.stringList()
+
+        for item in sel_items:
+            current_available.remove(item)
+
+        self.available_model.setStringList(current_available)
+
+    def move_to_available(self):
+
+        selected_indexes = self.list_to_plot.selectionModel().selectedIndexes()
+        if not selected_indexes:
+            return
+
+        selected_items = [index.data() for index in selected_indexes]
+        current_available = self.available_model.stringList()
+        self.available_model.setStringList(current_available + selected_items)
+
+        current_selected = self.selected_model.stringList()
+        for item in selected_items:
+            current_selected.remove(item)
+        self.selected_model.setStringList(current_selected)
+
+    def on_selection_changed(self, selected, deselected):
+
+        for index in selected.indexes():
+            print(f'seleccionado: {index.data()}')
 
     def open_file_window(self):
         dialog = OpenFilesDialog()
