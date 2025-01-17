@@ -64,6 +64,9 @@ class MainWindow(QMainWindow):
         self.available_model = QStringListModel()
         self.selected_model = QStringListModel()
 
+        self.list_availables.setModel(self.available_model)
+        self.list_to_plot.setModel(self.selected_model)
+
     def exit_program(self):
         sys.exit(app.exec_())
 
@@ -98,7 +101,6 @@ class MainWindow(QMainWindow):
 
     def load_columns(self):
         self.available_model.setStringList(self.columns_available)
-        self.list_availables.setModel(self.available_model)
 
     def move_to_selected(self):
 
