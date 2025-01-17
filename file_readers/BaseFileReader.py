@@ -1,14 +1,13 @@
 from abc import ABC, abstractmethod
 import os
 
+
 class FileReader:
 
-    def __init__(self, input_file, output_file):
+    def __init__(self, input_file, output_dir):
 
         self._input_file = input_file
-        self._output_file = output_file
-        self._output_dir = output_file.split('/')[:-1]
-        self._output_dir = '/'.join(self._output_dir)
+        self._output_dir = output_dir
         self._column_names = []
         self._data = []
         self._dateline = None
@@ -16,7 +15,7 @@ class FileReader:
 
     def check_files(self):
         if not os.path.isfile(self._input_file):
-            raise FileNotFoundError("No se encuentra el archivo", self._input_file)
+            raise FileNotFoundError(f"No se encuentra el archivo {self._input_file}")
         else:
             print('archivo encontrado')
 
@@ -41,7 +40,7 @@ class FileReader:
     @abstractmethod
     def compute_start_time(self):
         """
-        Método que genera el timestamp inicial en base a datos como
+        Método que devuelve el timestamp inicial en base a datos como
         fecha y hora a un valor estandar dado por segundos transcurridos
         desde las 00:00hs del día de efectuada la medición hasta el
         instante de la medición en formato UTC
