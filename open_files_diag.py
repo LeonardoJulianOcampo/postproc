@@ -54,19 +54,30 @@ class OpenFilesDialog(QtWidgets.QDialog):
 
     def browse_file(self, file):
 
-        file_path, _ = QFileDialog.getOpenFileName(self, "Seleccionar archivo",
-                                                   "",
-                                                   "Todos los archivos (*)")
+        if file != 'OUTDIR':
 
-        if file_path:
-            if file == 'IMAR':
-                self.pathIMAR.setText(file_path)
-            elif file == 'XSENS':
-                self.pathXSENS.setText(file_path)
-            elif file == 'TEL':
-                self.pathTel.setText(file_path)
-            else:
-                self.pathOut.setText(file_path)
+            file_path, _ = QFileDialog.getOpenFileName(self, "Seleccionar archivo",
+                                                       "",
+                                                       "Todos los archivos (*)")
+
+            if file_path:
+                if file == 'IMAR':
+                    self.pathIMAR.setText(file_path)
+                elif file == 'XSENS':
+                    self.pathXSENS.setText(file_path)
+                elif file == 'TEL':
+                    self.pathTel.setText(file_path)
+                else:
+                    self.pathOut.setText(file_path)
+
+        else:
+
+            file_path = QFileDialog.getExistingDirectory(self,
+                                                         "Seleccionar Carpeta",
+                                                         "",
+                                                         QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks)
+
+            self.pathOut.setText(file_path)
 
     def ok_button_clicked(self):
         data = self.get_input_data()
