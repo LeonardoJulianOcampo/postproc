@@ -12,7 +12,9 @@ class DB:
 
         print(f'out_file={self._output_file}')
 
-        self.compute_abs_timestart()
+        #self.compute_abs_timestart()
+        #self.add_start_time()
+        self.set_magn_to_zero()
         self.generate_db()
 
     def generate_db(self):
@@ -37,11 +39,32 @@ class DB:
         column of each dataset.
         """
         min_time = min(d['start_utc_seconds'] for d in self.pd_dataframes)
+        print('**************************')
+        print('*in compute_abs_timestart*')
 
         for d in self.pd_dataframes:
             time_diff = d['start_utc_seconds'] - min_time
+            print(f'time_diff:{time_diff}')
             time_key = 'time_' + d['imu_name']
-            d['imu_df'][time_key] = d['imu_df'][time_key] + time_diff
+            if time_diff > 0:
+                d['imu_df'][time_key] = d['imu_df'][time_key] + time_diff
+            if time_diff < 0:
+                d['imu_df'][time_key] = d['imu_df'][time_key] - time_diff
+
+            print(f"d['imu_df'][time_key]={d['imu_df'][time_key]}")
+
+    def set_magn_to_zero(self):
+        for d in self.pd_dataframes:
+            for column in d['imu_df'].columns:
+                if not column.startswith('time_'):
+                    offset = d['imu_df'][column].iloc[0]
+                    d['imu_df'][column] = d['imu_df'][column] - offset
+
+    def add_start_time(self):
+        for d in self.pd_dataframes:
+            time_start = d['start_utc_seconds']
+            time_key = 'time_' + d['imu_name']
+            d['imu_df'][time_key] = d['imu_df'][time_key] + time_start
 
     def save_as_csv(self):
         self.db.to_csv(self._output_dir + '/db.csv')
