@@ -12,6 +12,7 @@ from open_files_diag import OpenFilesDialog
 from dataframe_operations.generate_db import DB
 from utils.config import Configuration
 from dataframe_operations.temp_align import tempAlign
+from dataframe_operations.magn_align import magnAlign
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -68,6 +69,11 @@ class MainWindow(QMainWindow):
         self.y_align = self.findChild(QDoubleSpinBox,
                                       'determineYAlign')
 
+        self.loadFromDiskButton = self.findChild(QPushButton,
+                                                 'pushButtonLoadFromDisk')
+        self.saveAsCSV = self.findChild(QPushButton,
+                                        'pushButtonSaveAsCSV')
+
     def _init_data(self):
         self.input_paths_dict = {'in_dict': None, 'out_dict': None}
         self.out_dict = {name: os.getcwd() for name in ['IMAR', 'XSENS', 'TEL']}
@@ -84,10 +90,11 @@ class MainWindow(QMainWindow):
 
     def _setup_dataframe_ops(self):
         self._x_ops = tempAlign()
-
+        self._y_ops = magnAlign()
 
     def _setup_connections(self):
         self.ui.actionConfigurar_directorios.triggered.connect(self.open_file_window)
+
         self.ui.pushButtonRefreshPlot.clicked.connect(self.plot)
         self.ui.PushButtonCleanPlot.clicked.connect(self.clean_plot)
         self.ui.actionSalir.triggered.connect(self.exit_program)
@@ -97,6 +104,9 @@ class MainWindow(QMainWindow):
         self.list_to_plot.selectionModel().selectionChanged.connect(self.on_selection_changed)
         self.x_align.valueChanged.connect(self._set_x_align)
         self.y_align.valueChanged.connect(self._set_y_align)
+
+        self.loadFromDiskButton.clicked.connect(self._load_data_from_disk)
+        self.saveAsCSV.clicked.connect(self._save_as_csv)
 
     def exit_program(self):
         sys.exit(app.exec_())
@@ -108,7 +118,6 @@ class MainWindow(QMainWindow):
             input_path_dict[imu_name] = self.cfg.get_config()[imu_name]['datasetpath']
 
         self.input_paths_dict['in_dict'] = input_path_dict
-        self.init_processing()
 
     def init_processing(self):
         for element in self.input_paths_dict['in_dict'].keys():
@@ -142,6 +151,12 @@ class MainWindow(QMainWindow):
 
     def load_columns(self):
         self.available_model.setStringList(self.columns_available)
+
+    def _load_data_from_disk(self):
+        self.init_processing()
+
+    def _save_as_csv(self):
+        pass
 
     def move_to_selected(self):
 
@@ -245,15 +260,24 @@ class MainWindow(QMainWindow):
             offset = self.x_align.value()
 
             self.db['time' + imu_name] = self._x_ops.set_manual_align(imu_name,
-                                                                              self.db,
-                                                                              offset)
+                                                                      self.db,
+                                                                      offset)
 
             self.clean_plot()
             self.plot()
 
     def _set_y_align(self):
         if self._item_to_apply_op is not None:
-            pass
+            print(self._item_to_apply_op)
+            print(f'x_align_value: {self.x_align.value()}')
+
+            column_name = self._item_to_apply_op
+            offset = self.y_align.value()
+            self.db[column_name] = self._y_ops.set_manual_align(column_name,
+                                                               self.db,
+                                                               offset)
+            self.clean_plot()
+            self.plot()
 
 
 if __name__ == "__main__":
