@@ -53,6 +53,9 @@ class DB:
 
             print(f"d['imu_df'][time_key]={d['imu_df'][time_key]}")
 
+    def update(self, column_name, column_values):
+        self.db[column_name] = column_values
+
     def set_magn_to_zero(self):
         for d in self.pd_dataframes:
             for column in d['imu_df'].columns:
