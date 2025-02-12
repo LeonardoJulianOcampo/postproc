@@ -6,6 +6,8 @@ import pandas as pd
 import csv
 import datetime
 import os
+
+
 class IMARFileReader(FileReader):
 
     def __init__(self, input_file, output_dir):
@@ -55,7 +57,7 @@ class IMARFileReader(FileReader):
                 self.compute_start_time(second_of_week, is_week=True, day_week=days_week)
             elif "second_of_day" in df_date.columns:
                 second_of_day = round(float(df_date["second_of_day"]), 2)
-                seconds_utc = self.compute_start_time(second_of_day)
+                self.compute_start_time(second_of_day)
             else:
                 raise ValueError("No se encontraron valores necesarios para el cálculo")
 
@@ -68,12 +70,13 @@ class IMARFileReader(FileReader):
             'TINTRPL': 'time',
         }
         self.imar_df = self.imar_df.rename(columns=new_names)
-        print(f'imar_df={self.imar_df}')
         self.imar_df.columns = [col + '_imar' for col in self.imar_df.columns]
         self.imar_df['time_imar'] = self.imar_df['time_imar'] - self.imar_df['time_imar'].iloc[0]
+        print(f'imar:self.utc_seconds={self._time_utc_seconds}')
         columns_to_unwrap = ['yaw_imar', 'pitch_imar', 'roll_imar']
         self.imar_df = utils.unwrap_columns(self.imar_df,
                                             columns_to_unwrap)
+        print(f'imar_df={self.imar_df}')
 
     def save_file(self, temporal=False):
         """
@@ -123,14 +126,15 @@ class XSENSFileReader(FileReader):
             for line in file:
                 if not line.startswith('//'):
                     if firstline is True:
-                        self._column_names.extend(line.strip().split())
+                        self._column_names.extend(line.strip().split(' '))
                         print(f'column_names:{self._column_names}')
                         firstline = False
                     else:
-                        self._data.append(line.strip().split())
+                        self._data.append(line.strip().split(' '))
 
             self._xsens_df = pd.DataFrame(self._data, columns=self._column_names)
             self._time_utc_seconds = float(self._xsens_df['Second'].iloc[0])
+            print(f'xsens: time_utc_seconds:{self._time_utc_seconds}')
             self._xsens_df = self._xsens_df.astype(float)
 
     def format_file(self):
@@ -144,7 +148,7 @@ class XSENSFileReader(FileReader):
 
         self._xsens_df = self._xsens_df.rename(columns=new_names)
         self._xsens_df.columns = [col + '_xsens' for col in self._xsens_df.columns]
-        self._xsens_df['time_xsens'] = self._xsens_df['time_xsens'] - self._time_utc_seconds
+        self._xsens_df['time_xsens'] = self._xsens_df['time_xsens'] - self._xsens_df['time_xsens'].iloc[0]
         columns_to_unwrap = ['yaw_xsens', 'pitch_xsens', 'roll_xsens']
         self._xsens_df = utils.unwrap_columns(self._xsens_df,
                                               columns_to_unwrap)
@@ -172,7 +176,7 @@ class TELFileReader(FileReader):
         self._time_mm = 0.0
         self._time_ss = 0.0
         self._input_file_extension = input_file.split('.')[-1]
-        self._time_utc_seconds
+        self._time_utc_seconds = 0.0
         self.tel_df = None
 
     def compute_start_time(self):
@@ -193,6 +197,8 @@ class TELFileReader(FileReader):
             self._time_hh_s = self._time_hh * 3600
             self._time_mm_s = self._time_mm * 60
 
+            self._time_utc_seconds = self._time_hh_s + self._time_mm_s + self._time_ss
+
             self.tel_df = pd.read_excel(self._input_file, sheet_name=0)
 
         elif self._input_file_extension == 'csv':
@@ -210,13 +216,14 @@ class TELFileReader(FileReader):
                 self._time_hh_s = (self._time[0] + 3.0) * 3600
                 self._time_mm_s = self._time[1] * 60
                 self._time_ss = self._time[2]
+                self._time_utc_seconds = self._time_hh_s + self._time_mm_s + self._time_ss
 
     def format_file(self):
         new_names = {
             'Time (s)': 'time',
-            'Yaw (°)': 'yaw',
-            'Pitch (°)': 'pitch',
-            'Roll (°)': 'roll'
+            'Yaw': 'yaw',
+            'Pitch': 'pitch',
+            'Roll': 'roll',
             }
 
         self.tel_df = self.tel_df.rename(columns=new_names)
