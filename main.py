@@ -1,14 +1,20 @@
 import sys
 import os
 import importlib
-import numpy as np
+import logging
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton
+from PyQt5.QtWidgets import QDoubleSpinBox
 from PyQt5.QtWidgets import QWidget, QListView
 from PyQt5.QtWidgets import QTabWidget
 from ui.main_window_ui import Ui_MainWindow
 from PyQt5.QtCore import QStringListModel
 from open_files_diag import OpenFilesDialog
 from dataframe_operations.generate_db import DB
+from utils.config import Configuration
+from dataframe_operations.temp_align import tempAlign
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 class MainWindow(QMainWindow):
@@ -16,9 +22,22 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.ui.actionConfigurar_directorios.triggered.connect(self.open_file_window)
-        self.ui.pushButtonRefreshPlot.clicked.connect(self.plot)
-        self.ui.actionSalir.triggered.connect(self.exit_program)
+
+        self.cfg = Configuration('./cfg/config.cfg')
+        self.cfg._read_config()
+
+        self.columns2plot = []
+        self.columns_available = []
+
+        self.available_model = QStringListModel()
+        self.selected_model = QStringListModel()
+
+        self._init_ui_elements()
+        self._init_data()
+        self._setup_connections()
+        self._get_input_paths()
+
+    def _init_ui_elements(self):
         self.tabTimeD = self.findChild(QTabWidget,
                                        'tabWidget')
         self.tabTimeD = self.tabTimeD.widget(0)
@@ -40,35 +59,55 @@ class MainWindow(QMainWindow):
         self.move2availableButton = self.findChild(QPushButton,
                                                    'pushButtonRemoveToPlot')
 
-        self.load2plot_button.clicked.connect(self.move_to_selected)
-        self.move2availableButton.clicked.connect(self.move_to_available)
-
         self.list2plot = self.findChild(QListView,
                                         'listViewSeriesToPlot')
 
-        self.input_paths_dict = {'in_dict': None,
-                                 'out_dict': None}
+        self.x_align = self.findChild(QDoubleSpinBox,
+                                      'determineXAlign')
+        self.y_align = self.findChild(QDoubleSpinBox,
+                                      'determineYAlign')
 
-        self.out_dict = {'IMAR': os.getcwd(),
-                         'XSENS': os.getcwd(),
-                         'TEL': os.getcwd()}
-
+    def _init_data(self):
+        self.input_paths_dict = {'in_dict': None, 'out_dict': None}
+        self.out_dict = {name: os.getcwd() for name in ['IMAR', 'XSENS', 'TEL']}
         self.input_paths_dict['out_dict'] = self.out_dict
+
         self.reader_modules = 'file_readers.readers'
         self.reader_dict = {}
         self.data_sets = []
-
-        self.columns2plot = []
         self.columns_available = []
-
-        self.available_model = QStringListModel()
-        self.selected_model = QStringListModel()
-
         self.list_availables.setModel(self.available_model)
         self.list_to_plot.setModel(self.selected_model)
+        self._item_to_apply_op = None
+        self.dataset_dict = {}
+
+    def _setup_dataframe_ops(self):
+        x_ops = tempAlign()
+
+
+    def _setup_connections(self):
+        self.ui.actionConfigurar_directorios.triggered.connect(self.open_file_window)
+        self.ui.pushButtonRefreshPlot.clicked.connect(self.plot)
+        self.ui.PushButtonCleanPlot.clicked.connect(self.clean_plot)
+        self.ui.actionSalir.triggered.connect(self.exit_program)
+        self.load2plot_button.clicked.connect(self.move_to_selected)
+        self.move2availableButton.clicked.connect(self.move_to_available)
+
+        self.list_to_plot.selectionModel().selectionChanged.connect(self.on_selection_changed)
+        self.x_align.valueChanged.connect(self._set_x_align)
+        self.y_align.valueChanged.connect(self._set_y_align)
 
     def exit_program(self):
         sys.exit(app.exec_())
+
+    def _get_input_paths(self):
+        print('ejecutando get_input_paths')
+        input_path_dict = {}
+        for imu_name in self.cfg.get_config().keys():
+            input_path_dict[imu_name] = self.cfg.get_config()[imu_name]['datasetpath']
+
+        self.input_paths_dict['in_dict'] = input_path_dict
+        self.init_processing()
 
     def init_processing(self):
         for element in self.input_paths_dict['in_dict'].keys():
@@ -81,7 +120,7 @@ class MainWindow(QMainWindow):
             for key in self.reader_dict.keys():
 
                 reader = self.reader_dict[key](self.input_paths_dict['in_dict'][key],
-                                               self.input_paths_dict['in_dict']['OUTDIR'])
+                                               './output_files/')
 
                 print(f'imu:{key}')
                 print(f'file:{self.input_paths_dict["in_dict"][key]}')
@@ -94,9 +133,10 @@ class MainWindow(QMainWindow):
                 self.data_sets.append(reader.get_df())
                 print(f"self.data_sets[{key}]= {self.data_sets}")
 
-            database = DB(self.data_sets, self.input_paths_dict['in_dict']['OUTDIR'])
-            database.save_as_csv()
-            self.columns_available = database.get_db()
+            self.database = DB(self.data_sets, './output_files/')
+            self.database.save_as_csv()
+            self.columns_available = self.database.get_column_names()
+            self.db = self.database.get_db()
             self.load_columns()
 
     def load_columns(self):
@@ -139,6 +179,7 @@ class MainWindow(QMainWindow):
 
         for index in selected.indexes():
             print(f'seleccionado: {index.data()}')
+            self._item_to_apply_op = index.data()
 
     def open_file_window(self):
         dialog = OpenFilesDialog()
@@ -146,22 +187,57 @@ class MainWindow(QMainWindow):
         dialog.exec_()
 
     def plot(self):
-        try:
-            if 'time' not in pandas_df.columns or 'roll' not in pandas_df.columns:
-                return
-            x = pandas_df['time'].astype(float).tolist()
-            y = pandas_df['roll'].astype(float).tolist()
+        #         try:
+        #             if 'time' not in pandas_df.columns or 'roll' not in pandas_df.columns:
+        #                 return
+        #             x = pandas_df['time'].astype(float).tolist()
+        #             y = pandas_df['roll'].astype(float).tolist()
+        #
+        #             self.tabTimeDPlot.clear()
+        #             self.tabTimeDPlot.plot(x, y, pen='b')
+        #
+        #         except Exception as e:
+        #             print(f"Error al graficar: {str(e)}")
+        items_to_plot = self.selected_model.stringList()
+        colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
+        num_c = len(colors)
 
-            self.tabTimeDPlot.clear()
-            self.tabTimeDPlot.plot(x, y, pen='b')
+        for i, item in enumerate(items_to_plot):
+            imu_name = item.split('_')[-1]
+            print(f'imu_name: {imu_name}')
+            t_data = self.db['time_' + imu_name].astype(float).to_list()
+            p_data = self.db[item].astype(float).to_list()
 
-        except Exception as e:
-            print(f"Error al graficar: {str(e)}")
+            color = colors[i % num_c]
+            self.tabTimeDPlot.plot(t_data, p_data, pen=color)
+
+    def clean_plot(self):
+        self.tabTimeDPlot.clear()
 
     def receive_paths_from_file_window(self, path_dict):
         self.input_paths_dict['in_dict'] = path_dict
         process_files_diag = None
         self.init_processing()
+
+    def _set_x_align(self):
+        if self._item_to_apply_op is not None:
+            print(self._item_to_apply_op)
+            print(f'self.x_align.value(){self.x_align.value()}')
+            pass
+            imu_name = self._item_to_apply_op.split('_')[1].upper()
+            offset = self.x_align.value()
+            for dict in self.data_sets:
+                if dict['imu_name'] == imu_name:
+                    pd_dataframe = dict['imu_df']
+                    dict['imu_df'] = self.x_ops.set_manual_align(imu_name,
+                                                                 pd_dataframe,
+                                                                 offset)
+                    self.db.update()
+
+
+    def _set_y_align(self):
+        if self._item_to_apply_op is not None:
+            pass
 
 
 if __name__ == "__main__":
