@@ -3,6 +3,7 @@ import numpy as np
 
 def unwrap_columns(dataframe, column_names):
     for column in column_names:
+        dataframe[column] = np.deg2rad(dataframe[column].to_numpy())
         dataframe[column] = np.unwrap(dataframe[column].to_numpy())
         dataframe[column] = np.rad2deg(dataframe[column].to_numpy())
 
