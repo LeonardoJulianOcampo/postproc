@@ -35,6 +35,7 @@ class MainWindow(QMainWindow):
         self._init_ui_elements()
         self._init_data()
         self._setup_connections()
+        self._setup_dataframe_ops()
         self._get_input_paths()
 
     def _init_ui_elements(self):
@@ -82,7 +83,7 @@ class MainWindow(QMainWindow):
         self.dataset_dict = {}
 
     def _setup_dataframe_ops(self):
-        x_ops = tempAlign()
+        self._x_ops = tempAlign()
 
 
     def _setup_connections(self):
@@ -220,20 +221,35 @@ class MainWindow(QMainWindow):
         self.init_processing()
 
     def _set_x_align(self):
+        # if self._item_to_apply_op is not None:
+        #     print(self._item_to_apply_op)
+        #     print(f'self.x_align.value(){self.x_align.value()}')
+
+        #     imu_name = self._item_to_apply_op.split('_')[1].upper()
+        #     column_name = self._item_to_apply_op
+        #     offset = self.x_align.value()
+
+        #     for dict in self.data_sets:
+        #         if dict['imu_name'] == imu_name:
+        #             pd_dataframe = dict['imu_df']
+        #             pd_dataframe = self.x_ops.set_manual_align(imu_name,
+        #                                                        pd_dataframe,
+        #                                                        offset)
+        #             pass
+
         if self._item_to_apply_op is not None:
             print(self._item_to_apply_op)
-            print(f'self.x_align.value(){self.x_align.value()}')
-            pass
-            imu_name = self._item_to_apply_op.split('_')[1].upper()
-            offset = self.x_align.value()
-            for dict in self.data_sets:
-                if dict['imu_name'] == imu_name:
-                    pd_dataframe = dict['imu_df']
-                    dict['imu_df'] = self.x_ops.set_manual_align(imu_name,
-                                                                 pd_dataframe,
-                                                                 offset)
-                    self.db.update()
+            print(f'x_align_value: {self.x_align.value()}')
 
+            imu_name = self._item_to_apply_op.split('_')[1]
+            offset = self.x_align.value()
+
+            self.db['time' + imu_name] = self._x_ops.set_manual_align(imu_name,
+                                                                              self.db,
+                                                                              offset)
+
+            self.clean_plot()
+            self.plot()
 
     def _set_y_align(self):
         if self._item_to_apply_op is not None:
