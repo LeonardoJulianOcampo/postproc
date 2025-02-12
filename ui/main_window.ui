@@ -420,16 +420,16 @@
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_5">
              <item>
-              <widget class="QPushButton" name="pushButtonSaveAsSVG">
+              <widget class="QPushButton" name="pushButtonLoadFromDisk">
                <property name="text">
-                <string>Guardar como SVG</string>
+                <string>Cargar datos desde el disco</string>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButtonSaveAsPNG">
+              <widget class="QPushButton" name="pushButtonSaveAsCSV">
                <property name="text">
-                <string>Guardar como PNG</string>
+                <string>Guardar como csv</string>
                </property>
               </widget>
              </item>
