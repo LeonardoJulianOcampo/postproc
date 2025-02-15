@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import QTabWidget
 from ui.main_window_ui import Ui_MainWindow
 from PyQt5.QtCore import QStringListModel
 from open_files_diag import OpenFilesDialog
+from save_csv_diag import SaveToCSVDialog
 from dataframe_operations.generate_db import DB
 from utils.config import Configuration
 from dataframe_operations.temp_align import tempAlign
@@ -32,6 +33,8 @@ class MainWindow(QMainWindow):
 
         self.available_model = QStringListModel()
         self.selected_model = QStringListModel()
+
+        self._save_csv_data_dict = {}
 
         self._init_ui_elements()
         self._init_data()
@@ -106,7 +109,7 @@ class MainWindow(QMainWindow):
         self.y_align.valueChanged.connect(self._set_y_align)
 
         self.loadFromDiskButton.clicked.connect(self._load_data_from_disk)
-        self.saveAsCSV.clicked.connect(self._save_as_csv)
+        self.saveAsCSV.clicked.connect(self.open_save_file_csv_window)
 
     def exit_program(self):
         sys.exit(app.exec_())
@@ -144,7 +147,6 @@ class MainWindow(QMainWindow):
                 print(f"self.data_sets[{key}]= {self.data_sets}")
 
             self.database = DB(self.data_sets, './output_files/')
-            self.database.save_as_csv()
             self.columns_available = self.database.get_column_names()
             self.db = self.database.get_db()
             self.load_columns()
@@ -156,7 +158,7 @@ class MainWindow(QMainWindow):
         self.init_processing()
 
     def _save_as_csv(self):
-        pass
+        self.database.save_range(self._save_csv_data_dict)
 
     def move_to_selected(self):
 
@@ -202,6 +204,11 @@ class MainWindow(QMainWindow):
         dialog.data_ready.connect(self.receive_paths_from_file_window)
         dialog.exec_()
 
+    def open_save_file_csv_window(self):
+        dialog = SaveToCSVDialog()
+        dialog.data_ready.connect(self.receive_data_from_save_csv_window)
+        dialog.exec_()
+
     def plot(self):
         #         try:
         #             if 'time' not in pandas_df.columns or 'roll' not in pandas_df.columns:
@@ -214,6 +221,7 @@ class MainWindow(QMainWindow):
         #
         #         except Exception as e:
         #             print(f"Error al graficar: {str(e)}")
+        self.clean_plot()
         items_to_plot = self.selected_model.stringList()
         colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
         num_c = len(colors)
@@ -232,8 +240,10 @@ class MainWindow(QMainWindow):
 
     def receive_paths_from_file_window(self, path_dict):
         self.input_paths_dict['in_dict'] = path_dict
-        process_files_diag = None
         self.init_processing()
+
+    def receive_data_from_save_csv_window(self, data_dict):
+        self.database.save_range(data_dict)
 
     def _set_x_align(self):
         # if self._item_to_apply_op is not None:
@@ -259,9 +269,9 @@ class MainWindow(QMainWindow):
             imu_name = self._item_to_apply_op.split('_')[1]
             offset = self.x_align.value()
 
-            self.db['time' + imu_name] = self._x_ops.set_manual_align(imu_name,
-                                                                      self.db,
-                                                                      offset)
+            self.db['time_' + imu_name] = self._x_ops.set_manual_align(imu_name,
+                                                                       self.db,
+                                                                       offset)
 
             self.clean_plot()
             self.plot()
@@ -274,8 +284,8 @@ class MainWindow(QMainWindow):
             column_name = self._item_to_apply_op
             offset = self.y_align.value()
             self.db[column_name] = self._y_ops.set_manual_align(column_name,
-                                                               self.db,
-                                                               offset)
+                                                                self.db,
+                                                                offset)
             self.clean_plot()
             self.plot()
 
