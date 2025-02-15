@@ -70,4 +70,21 @@ class DB:
             d['imu_df'][time_key] = d['imu_df'][time_key] + time_start
 
     def save_as_csv(self):
-        self.db.to_csv(self._output_dir + '/db.csv')
+        self.db.to_csv(self._output_dir + 'db.csv')
+
+    def save_range(self, data_dict):
+        min_time = data_dict['time_range'][0]
+        max_time = data_dict['time_range'][1]
+        columns_to_drop = []
+
+        db_cropped = self.db[(self.db['time_imar'] >= min_time) &
+                             (self.db['time_imar'] <= max_time)]
+
+        for column_name in db_cropped.columns:
+            if not column_name.startswith(('time', 'roll', 'yaw', 'pitch')):
+                columns_to_drop.append(column_name)
+
+        db_cropped = db_cropped.drop(columns_to_drop, axis=1)
+        print(f'guardando en {self._output_dir} + {data_dict["name"]} + .csv')
+        print(f'columns to drop is: {columns_to_drop}')
+        db_cropped.to_csv(self._output_dir + data_dict['name'] + '.csv')

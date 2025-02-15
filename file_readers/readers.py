@@ -76,6 +76,9 @@ class IMARFileReader(FileReader):
         columns_to_unwrap = ['yaw_imar', 'pitch_imar', 'roll_imar']
         self.imar_df = utils.unwrap_columns(self.imar_df,
                                             columns_to_unwrap)
+        for column_name in columns_to_unwrap:
+            self.imar_df[column_name] = self.imar_df[column_name].rolling(window=30,
+                                                                          min_periods=1).mean()
         print(f'imar_df={self.imar_df}')
 
     def save_file(self, temporal=False):
@@ -152,6 +155,11 @@ class XSENSFileReader(FileReader):
         columns_to_unwrap = ['yaw_xsens', 'pitch_xsens', 'roll_xsens']
         self._xsens_df = utils.unwrap_columns(self._xsens_df,
                                               columns_to_unwrap)
+        self._xsens_df = self._xsens_df.drop_duplicates(subset='time_xsens', keep="first")
+
+        for column_name in columns_to_unwrap:
+            self._xsens_df[column_name] = self._xsens_df[column_name].rolling(window=30,
+                                                                              min_periods=1).mean()
 
         print(f'self._xsens_df: {self._xsens_df}')
         print(f'xsens_columns:{self._xsens_df.columns}')
@@ -231,6 +239,10 @@ class TELFileReader(FileReader):
         columns_to_unwrap = ['yaw_tel', 'pitch_tel', 'roll_tel']
         self.tel_df = utils.unwrap_columns(self.tel_df,
                                            columns_to_unwrap)
+
+        for column_name in columns_to_unwrap:
+            self.tel_df[column_name] = self.tel_df[column_name].rolling(window=30,
+                                                                        min_periods=1).mean()
 
     def get_df(self):
         return {'imu_name': 'tel',
