@@ -135,8 +135,6 @@ class MainWindow(QMainWindow):
                 reader = self.reader_dict[key](self.input_paths_dict['in_dict'][key],
                                                './output_files/')
 
-                print(f'imu:{key}')
-                print(f'file:{self.input_paths_dict["in_dict"][key]}')
                 reader.check_files()
                 reader.read_file()
                 reader.format_file()
@@ -144,7 +142,6 @@ class MainWindow(QMainWindow):
 
                 # self.data_sets[key] = reader.get_df()
                 self.data_sets.append(reader.get_df())
-                print(f"self.data_sets[{key}]= {self.data_sets}")
 
             self.database = DB(self.data_sets, './output_files/')
             self.columns_available = self.database.get_column_names()
@@ -196,7 +193,6 @@ class MainWindow(QMainWindow):
     def on_selection_changed(self, selected, deselected):
 
         for index in selected.indexes():
-            print(f'seleccionado: {index.data()}')
             self._item_to_apply_op = index.data()
 
     def open_file_window(self):
@@ -220,20 +216,18 @@ class MainWindow(QMainWindow):
         #             self.tabTimeDPlot.plot(x, y, pen='b')
         #
         #         except Exception as e:
-        #             print(f"Error al graficar: {str(e)}")
         self.clean_plot()
         items_to_plot = self.selected_model.stringList()
         colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
         num_c = len(colors)
-
+        self.tabTimeDPlot.addLegend()
         for i, item in enumerate(items_to_plot):
             imu_name = item.split('_')[-1]
-            print(f'imu_name: {imu_name}')
             t_data = self.db['time_' + imu_name].astype(float).to_list()
             p_data = self.db[item].astype(float).to_list()
 
             color = colors[i % num_c]
-            self.tabTimeDPlot.plot(t_data, p_data, pen=color)
+            self.tabTimeDPlot.plot(t_data, p_data, pen=color, name=item)
 
     def clean_plot(self):
         self.tabTimeDPlot.clear()
@@ -246,46 +240,35 @@ class MainWindow(QMainWindow):
         self.database.save_range(data_dict)
 
     def _set_x_align(self):
-        # if self._item_to_apply_op is not None:
-        #     print(self._item_to_apply_op)
-        #     print(f'self.x_align.value(){self.x_align.value()}')
-
-        #     imu_name = self._item_to_apply_op.split('_')[1].upper()
-        #     column_name = self._item_to_apply_op
-        #     offset = self.x_align.value()
-
-        #     for dict in self.data_sets:
-        #         if dict['imu_name'] == imu_name:
-        #             pd_dataframe = dict['imu_df']
-        #             pd_dataframe = self.x_ops.set_manual_align(imu_name,
-        #                                                        pd_dataframe,
-        #                                                        offset)
-        #             pass
 
         if self._item_to_apply_op is not None:
-            print(self._item_to_apply_op)
             print(f'x_align_value: {self.x_align.value()}')
 
             imu_name = self._item_to_apply_op.split('_')[1]
+            print(f'imu_name: {imu_name}')
             offset = self.x_align.value()
 
-            self.db['time_' + imu_name] = self._x_ops.set_manual_align(imu_name,
-                                                                       self.db,
-                                                                       offset)
+            self.db['time_'+imu_name] = self._x_ops.set_manual_align(imu_name,
+                                                                     self.db,
+                                                                     offset)
+            print(f"time_{imu_name}")
 
+            self.database.update_db('time_'+imu_name,
+                                    self.db['time_' + imu_name])
+            self.db = self.database.get_db()
             self.clean_plot()
             self.plot()
 
     def _set_y_align(self):
         if self._item_to_apply_op is not None:
-            print(self._item_to_apply_op)
-            print(f'x_align_value: {self.x_align.value()}')
+            print(f'y_align_value: {self.y_align.value()}')
 
             column_name = self._item_to_apply_op
             offset = self.y_align.value()
             self.db[column_name] = self._y_ops.set_manual_align(column_name,
                                                                 self.db,
                                                                 offset)
+            self.database.set_db(self.db)
             self.clean_plot()
             self.plot()
 
