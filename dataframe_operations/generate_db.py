@@ -27,6 +27,9 @@ class DB:
     def get_db(self):
         return self.db
 
+    def set_db(self, db):
+        self.db = db.copy()
+
     def get_column_names(self):
         return self.db.columns
 
@@ -39,19 +42,14 @@ class DB:
         column of each dataset.
         """
         min_time = min(d['start_utc_seconds'] for d in self.pd_dataframes)
-        print('**************************')
-        print('*in compute_abs_timestart*')
 
         for d in self.pd_dataframes:
             time_diff = d['start_utc_seconds'] - min_time
-            print(f'time_diff:{time_diff}')
             time_key = 'time_' + d['imu_name']
             if time_diff > 0:
                 d['imu_df'][time_key] = d['imu_df'][time_key] + time_diff
             if time_diff < 0:
                 d['imu_df'][time_key] = d['imu_df'][time_key] - time_diff
-
-            print(f"d['imu_df'][time_key]={d['imu_df'][time_key]}")
 
     def update_db(self, column_name, column_values):
         self.db[column_name] = column_values
@@ -85,6 +83,5 @@ class DB:
                 columns_to_drop.append(column_name)
 
         db_cropped = db_cropped.drop(columns_to_drop, axis=1)
-        print(f'guardando en {self._output_dir} + {data_dict["name"]} + .csv')
-        print(f'columns to drop is: {columns_to_drop}')
+        print(f'guardando en {self._output_dir}{data_dict["name"]}.csv')
         db_cropped.to_csv(self._output_dir + data_dict['name'] + '.csv')
