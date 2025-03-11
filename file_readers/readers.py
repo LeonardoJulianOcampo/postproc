@@ -53,7 +53,7 @@ class IMARFileReader(FileReader):
             if "second_of_week" in df_date.columns:
                 second_of_week = round(float(df_date["second_of_week"]), 2)
                 days_week = datetime.date(year, month, day).weekday()
-                print(f'days_week = {days_week}')
+                print(f'days_week = {days_week}') # todo: replace print for logger
                 self.compute_start_time(second_of_week, is_week=True, day_week=days_week)
             elif "second_of_day" in df_date.columns:
                 second_of_day = round(float(df_date["second_of_day"]), 2)
@@ -79,7 +79,6 @@ class IMARFileReader(FileReader):
         for column_name in columns_to_unwrap:
             self.imar_df[column_name] = self.imar_df[column_name].rolling(window=30,
                                                                           min_periods=1).mean()
-        print(f'imar_df={self.imar_df}')
 
     def save_file(self, temporal=False):
         """
@@ -129,11 +128,10 @@ class XSENSFileReader(FileReader):
             for line in file:
                 if not line.startswith('//'):
                     if firstline is True:
-                        self._column_names.extend(line.strip().split(' '))
-                        print(f'column_names:{self._column_names}')
+                        self._column_names.extend(line.strip().split(','))
                         firstline = False
                     else:
-                        self._data.append(line.strip().split(' '))
+                        self._data.append(line.strip().split(','))
 
             self._xsens_df = pd.DataFrame(self._data, columns=self._column_names)
             self._time_utc_seconds = float(self._xsens_df['Second'].iloc[0])
@@ -155,14 +153,15 @@ class XSENSFileReader(FileReader):
         columns_to_unwrap = ['yaw_xsens', 'pitch_xsens', 'roll_xsens']
         self._xsens_df = utils.unwrap_columns(self._xsens_df,
                                               columns_to_unwrap)
-        self._xsens_df = self._xsens_df.drop_duplicates(subset='time_xsens', keep="first")
+
+        self._xsens_df = self._xsens_df.sort_values(by='time_xsens')
+        self._xsens_df = self._xsens_df.drop_duplicates(subset='time_xsens',
+                                                        keep="first",
+                                                        ignore_index=True)
 
         for column_name in columns_to_unwrap:
             self._xsens_df[column_name] = self._xsens_df[column_name].rolling(window=30,
                                                                               min_periods=1).mean()
-
-        print(f'self._xsens_df: {self._xsens_df}')
-        print(f'xsens_columns:{self._xsens_df.columns}')
 
     def get_df(self):
         return {'imu_name': 'xsens',
