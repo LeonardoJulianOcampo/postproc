@@ -253,9 +253,10 @@ class MainWindow(QMainWindow):
                                                                      offset)
             print(f"time_{imu_name}")
 
-            self.database.update_db('time_'+imu_name,
-                                    self.db['time_' + imu_name])
-            self.db = self.database.get_db()
+            # self.database.update_db('time_'+imu_name,
+            #                        self.db['time_' + imu_name])
+            # self.db = self.database.get_db()
+            self.database.db = self.db.copy()
             self.clean_plot()
             self.plot()
 
@@ -268,7 +269,8 @@ class MainWindow(QMainWindow):
             self.db[column_name] = self._y_ops.set_manual_align(column_name,
                                                                 self.db,
                                                                 offset)
-            self.database.set_db(self.db)
+            # self.database.set_db(self.db)
+            self.database.db = self.db.copy()
             self.clean_plot()
             self.plot()
 
