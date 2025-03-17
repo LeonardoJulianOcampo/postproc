@@ -158,6 +158,7 @@ class XSENSFileReader(FileReader):
         self._xsens_df = self._xsens_df.drop_duplicates(subset='time_xsens',
                                                         keep="first",
                                                         ignore_index=True)
+        self._xsens_df = utils.fix_discontinuities(self._xsens_df, 0.1).copy()
 
         for column_name in columns_to_unwrap:
             self._xsens_df[column_name] = self._xsens_df[column_name].rolling(window=30,
