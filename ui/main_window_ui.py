@@ -34,6 +34,8 @@ class Ui_MainWindow(object):
         self.timePlotWidget.setMinimumSize(QtCore.QSize(851, 501))
         self.timePlotWidget.setMaximumSize(QtCore.QSize(851, 501))
         self.timePlotWidget.setObjectName("timePlotWidget")
+        self.timePlotWidget.setLabel('left', 'Magnitud (Grados)')
+        self.timePlotWidget.setLabel('bottom', 'Tiempo (Segundos)')
         self.horizontalLayout_3.addWidget(self.timePlotWidget)
         self.groupBox = QtWidgets.QGroupBox(self.tabTimeDomain)
         self.groupBox.setMinimumSize(QtCore.QSize(421, 501))
